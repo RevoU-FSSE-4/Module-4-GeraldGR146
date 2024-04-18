@@ -7,6 +7,7 @@ import AccountInformationForm from './AccountInformationForm';
 
 const MultiStepForm: React.FC = () => {
   const [step, setStep] = useState<number>(1);
+  const [formData, setFormData] = useState<any>(null);
 
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step - 1);
@@ -58,9 +59,12 @@ const MultiStepForm: React.FC = () => {
                   .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, 'Password must contain at least one lowercase letter, one uppercase letter, and one number'),
               })
         }
-        onSubmit={(values, actions) => {
-          console.log(values);
-          actions.setSubmitting(false);
+        onSubmit={(values, { setSubmitting }) => {
+          setSubmitting(false);
+          setFormData(values);
+          if (step === 3) {
+            alert(JSON.stringify(values, null, 2));
+          }
         }}
       >
         {({ isValid, validateForm, dirty, errors }) => (
@@ -113,9 +117,9 @@ const MultiStepForm: React.FC = () => {
                     });
                   }}
                   className={`${
-                    isValid && !Object.keys(errors).length ? 'bg-blue-500 hover:bg-blue-700' : 'bg-gray-300 pointer-events-none'
+                    dirty && Object.keys(errors).length === 0 ? 'bg-blue-500 hover:bg-blue-700' : 'bg-gray-300 pointer-events-none'
                   } text-white font-bold py-2 px-4 rounded`}
-                  disabled={!isValid || Object.keys(errors).length > 0}
+                  disabled={!dirty || Object.keys(errors).length > 0}
                 >
                   Next
                 </button>
