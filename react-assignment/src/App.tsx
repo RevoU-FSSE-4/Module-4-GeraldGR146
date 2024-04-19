@@ -7,7 +7,6 @@ import AccountInformationForm from './AccountInformationForm';
 
 const MultiStepForm: React.FC = () => {
   const [step, setStep] = useState<number>(1);
-  const [formData, setFormData] = useState<any>(null);
 
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step - 1);
@@ -47,8 +46,8 @@ const MultiStepForm: React.FC = () => {
             : step === 2
             ? Yup.object().shape({
                 streetAddress: Yup.string().required('Street Address is required'),
-                city: Yup.string().required('City is required'),
-                state: Yup.string().required('State is required'),
+                city: Yup.string().matches(/^[^\d]+$/, 'City cannot contain numbers').required('City is required'),
+                state: Yup.string().matches(/^[^\d]+$/, 'State cannot contain numbers').required('State is required'),
                 zipCode: Yup.string().matches(/^\d{5}$/, 'Invalid zip code').required('Zip Code is required'),
               })
             : Yup.object().shape({
@@ -60,14 +59,15 @@ const MultiStepForm: React.FC = () => {
               })
         }
         onSubmit={(values, { setSubmitting }) => {
-          setSubmitting(false);
-          setFormData(values);
-          if (step === 3) {
-            alert(JSON.stringify(values, null, 2));
-          }
+          setSubmitting(true);
+          setTimeout(() => {
+            // Simulating API call delay
+            alert(JSON.stringify(values, null, 2)); // Handle form submission, e.g., make API call
+            setSubmitting(false);
+          }, 1000); // Adjust the delay as needed
         }}
       >
-        {({ isValid, validateForm, dirty, errors }) => (
+        {({ isValid, validateForm, dirty, errors, isSubmitting }) => (
           <Form>
             {/* Progress Indicator */}
             <div className="mb-8 flex justify-between items-center">
@@ -106,7 +106,7 @@ const MultiStepForm: React.FC = () => {
                   Previous
                 </button>
               )}
-              {step !== 3 ? (
+              {step !== 3 && (
                 <button
                   type="button"
                   onClick={() => {
@@ -119,12 +119,13 @@ const MultiStepForm: React.FC = () => {
                   className={`${
                     dirty && Object.keys(errors).length === 0 ? 'bg-blue-500 hover:bg-blue-700' : 'bg-gray-300 pointer-events-none'
                   } text-white font-bold py-2 px-4 rounded`}
-                  disabled={!dirty || Object.keys(errors).length > 0}
+                  disabled={!dirty || Object.keys(errors).length > 0 || isSubmitting}
                 >
                   Next
                 </button>
-              ) : (
-                <button type="submit" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+              )}
+              {step === 3 && (
+                <button type="submit" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" disabled={isSubmitting}>
                   Submit
                 </button>
               )}
